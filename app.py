@@ -4,7 +4,8 @@ import os
 import socket
 from datetime import datetime, timezone
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -52,15 +53,17 @@ def check_s3():
         return {"status": "error", "error": str(e)}
 
 
-@app.get("/")
-def root():
-    return {"service": "e2e-shared-infra-demo", "status": "running"}
-
-
 @app.get("/health")
-def health():
+@app.get("/{prefix}/health")
+def health(prefix: str = ""):
     return {
         "db": check_db(),
         "efs": check_efs(),
         "s3": check_s3(),
     }
+
+
+@app.get("/")
+@app.get("/{prefix}")
+def root(prefix: str = ""):
+    return {"service": "e2e-shared-infra-demo", "status": "running"}
